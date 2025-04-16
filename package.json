@@ -1,0 +1,29 @@
+{
+  "name": "physical-store",
+  "version": "1.0.0",
+  "description": "Projeto Physical Store com NestJS",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@nestjs/common": "^9.0.0",
+    "@nestjs/core": "^9.0.0",
+    "@nestjs/platform-express": "^9.4.3",
+    "axios": "^0.27.2",
+    "correios-brasil": "^3.0.6",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.5.6"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^9.0.0",
+    "@nestjs/schematics": "^9.0.0",
+    "@nestjs/testing": "^9.0.0",
+    "@types/jest": "^28.1.6",
+    "@types/node": "^18.0.0",
+    "jest": "^28.1.3",
+    "ts-jest": "^28.0.7",
+    "typescript": "^4.7.4"
+  }
+}
