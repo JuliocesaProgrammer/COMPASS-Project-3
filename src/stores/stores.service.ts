@@ -49,7 +49,7 @@ export class StoresService {
 
     try {
       const response = await axios.post(
-      'https://melhorenvio.com.br/api/v2/me/shipment/calculate',
+        'https://sandbox.melhorenvio.com.br/api/v2/me/shipment/calculate',
         [
           {
             from: { postal_code: origemCep.replace('-', '') },
@@ -60,7 +60,7 @@ export class StoresService {
               height: 10,
               length: 20,
             },
-            services: ['1', '2'],
+            services: ['1', '2']  // ✅ sem vírgula depois!
           },
         ],
         {
@@ -70,6 +70,7 @@ export class StoresService {
           },
         },
       );
+      
 
       return response.data.map((item: any) => ({
         description: item.name,
