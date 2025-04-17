@@ -9,7 +9,8 @@ export class StoresService {
   private stores: Store[] = [
     { storeName: 'Loja Recife', postalCode: '50030230', latitude: -8.0568146, longitude: -34.8737217, state: 'PE' },
     { storeName: 'Loja Salvador', postalCode: '40015160', latitude: -12.9801943, longitude: -38.5285326, state: 'BA' },
-    { storeName: 'Loja Petrolina', postalCode: '56302200', latitude: -9.3864618, longitude: -40.5044449, state: 'BA' },
+    { storeName: 'Loja Petrolina', postalCode: '56302200', latitude: -9.3864618, longitude: -40.5044449, state: 'PE' },
+    { storeName: 'Loja Juazeiro', postalCode: '48903515', latitude: -9.4108862, longitude: -40.5038853, state: 'BA' },
   ];
 
   async getAddressByCep(cep: string) {
