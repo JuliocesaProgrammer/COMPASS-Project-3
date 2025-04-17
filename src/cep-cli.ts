@@ -20,16 +20,16 @@ rl.question('Digite o CEP: ', async (cep) => {
       console.log('\n🔍 Lojas mais próximas:\n');
 
       lojas.forEach((loja, index) => {
-        console.log(`🏬 Loja ${index + 1}: ${loja.loja.storeName}`);
-        console.log(`📍 Estado: ${loja.loja.state}`);
-        console.log(`📦 CEP: ${loja.loja.postalCode}`);
+        console.log(`🏬 Loja ${index + 1}: ${loja.loja}`);  // Changed from loja.loja.storeName
+        console.log(`📍 Estado: ${loja.estado}`);          // Changed from loja.loja.state
+        console.log(`📦 CEP: ${loja.cep}`);                // Changed from loja.loja.postalCode
         console.log(`📏 Distância: ${loja.distancia}`);
         console.log('🚚 Fretes disponíveis:');
 
-        if (loja.frete.length === 0) {
+        if (loja.fretes.length === 0) {                    // Changed from loja.frete
           console.log('   ❌ Nenhum frete disponível.');
         } else {
-          loja.frete.forEach((f: any) => {
+          loja.fretes.forEach((f: any) => {                // Changed from loja.frete
             console.log(`   📦 ${f.description} - ${f.price} (${f.prazo})`);
           });
         }

@@ -7,9 +7,9 @@ dotenv.config();
 @Injectable()
 export class StoresService {
   private stores: Store[] = [
-    { storeName: 'Loja Recife', postalCode: '50030-230', latitude: -8.0568146, longitude: -34.8737217, state: 'PE' },
-    { storeName: 'Loja Salvador', postalCode: '40015-160', latitude: -12.9801943, longitude: -38.5285326, state: 'BA' },
-    { storeName: 'Loja Petrolina', postalCode: '56302-200', latitude: -9.3864618, longitude: -40.5044449, state: 'BA' },
+    { storeName: 'Loja Recife', postalCode: '50030230', latitude: -8.0568146, longitude: -34.8737217, state: 'PE' },
+    { storeName: 'Loja Salvador', postalCode: '40015160', latitude: -12.9801943, longitude: -38.5285326, state: 'BA' },
+    { storeName: 'Loja Petrolina', postalCode: '56302200', latitude: -9.3864618, longitude: -40.5044449, state: 'BA' },
   ];
 
   async getAddressByCep(cep: string) {
@@ -47,38 +47,56 @@ export class StoresService {
       return [];
     }
 
+    // Format CEPs (remove all non-numeric characters)
+    const formatCep = (cep: string) => cep.replace(/\D/g, '');
+    const cepOrigem = formatCep(origemCep);
+    const cepDestino = formatCep(destinoCep);
+
+    if (!cepOrigem || !cepDestino || cepOrigem.length !== 8 || cepDestino.length !== 8) {
+      console.error('CEPs inválidos');
+      return [];
+    }
+
     try {
       const response = await axios.post(
         'https://sandbox.melhorenvio.com.br/api/v2/me/shipment/calculate',
-        [
-          {
-            from: { postal_code: origemCep.replace('-', '') },
-            to: { postal_code: destinoCep.replace('-', '') },
-            package: {
-              weight: 1,
-              width: 15,
-              height: 10,
-              length: 20,
-            },
-            services: ['1', '2']  // ✅ sem vírgula depois!
+        {
+          from: { postal_code: cepOrigem },
+          to: { postal_code: cepDestino },
+          package: {
+            weight: 1,
+            width: 11,
+            height: 17,
+            length: 19,
           },
-        ],
+          options: {
+            insurance_value: 100,
+            receipt: false,
+            own_hand: false,
+            reverse: false,
+            non_commercial: true,
+          }
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
+            Accept: 'application/json',
           },
-        },
+        }
       );
-      
+
+      if (!response.data || !Array.isArray(response.data)) {
+        return [];
+      }
 
       return response.data.map((item: any) => ({
         description: item.name,
-        prazo: `${item.delivery_time.days} dias úteis`,
-        price: `R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}`,
+        prazo: `${item.delivery_time?.days || 'N/A'} dias úteis`,
+        price: item.price ? `R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}` : 'Indisponível',
       }));
     } catch (error: any) {
-      console.error('Erro ao calcular com Melhor Envio:', error.message || error);
+      console.error('Erro ao calcular com Melhor Envio:', error.response?.data || error.message || error);
       return [];
     }
   }
@@ -99,30 +117,37 @@ export class StoresService {
   }
 
   async getTodasLojasComFrete(cep: string) {
-    const userCoords = await this.getCoordsFromCep(cep);
-  
+    // Format input CEP
+    const userCep = cep.replace(/\D/g, '');
+    if (userCep.length !== 8) {
+      return [];
+    }
+
+    const userCoords = await this.getCoordsFromCep(userCep);
+
     const resultados = await Promise.all(
       this.stores.map(async (store) => {
         const distancia = this.calculateDistance(userCoords, {
           lat: store.latitude,
           lng: store.longitude,
         });
-  
-        const frete = await this.getFrete(store.postalCode, cep);
-  
+
+        const frete = await this.getFrete(store.postalCode, userCep);
+
         return {
-          loja: store,
+          loja: store.storeName,
+          estado: store.state,
+          cep: store.postalCode,
           distancia: `${distancia.toFixed(1)} km`,
-          frete,
+          fretes: frete.length > 0 ? frete : [{ description: 'Nenhum frete disponível', prazo: 'N/A', price: 'N/A' }],
         };
       })
     );
-  
-    // Ordena pela menor distância
+
     return resultados.sort((a, b) => {
       const aDist = parseFloat(a.distancia.replace(' km', ''));
       const bDist = parseFloat(b.distancia.replace(' km', ''));
       return aDist - bDist;
     });
   }
-}  
+}
