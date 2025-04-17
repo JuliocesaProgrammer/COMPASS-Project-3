@@ -49,7 +49,7 @@ export class StoresService {
 
     try {
       const response = await axios.post(
-      'https://api.melhorenvio.com.br/api/v2/me/shipment/calculate',
+      'https://melhorenvio.com.br/api/v2/me/shipment/calculate',
         [
           {
             from: { postal_code: origemCep.replace('-', '') },
