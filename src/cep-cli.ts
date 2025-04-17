@@ -1,39 +1,49 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { StoresService } from './stores/stores.service';
 import * as readline from 'readline';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-async function askCep(): Promise<string> {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-  return new Promise((resolve) =>
-    rl.question('Digite o CEP: ', (answer) => {
-      rl.close();
-      resolve(answer.trim());
-    }),
-  );
-}
+rl.question('Digite o CEP: ', async (cep) => {
+  const storesService = new StoresService();
 
-async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(AppModule);
-  const storesService = app.get(StoresService);
+  try {
+    const lojas = await storesService.getTodasLojasComFrete(cep);
 
-  const cep = await askCep();
-  const coords = await storesService.getCoordsFromCep(cep);
-  const closest = storesService.findClosestStore(coords.lat, coords.lng);
+    if (lojas.length === 0) {
+      console.log('❌ Nenhuma loja encontrada.');
+    } else {
+      console.log('\n🔍 Lojas mais próximas:\n');
 
-  console.log('\n🔍 Loja mais próxima:');
-  if (closest) {
-    console.log(`🏬 Nome: ${closest.storeName}`);
-    console.log(`📍 Estado: ${closest.state}`);
-    console.log(`📦 CEP: ${closest.postalCode}`);
-  } else {
-    console.log('Nenhuma loja encontrada.');
+      lojas.forEach((loja, index) => {
+        console.log(`🏬 Loja ${index + 1}: ${loja.loja.storeName}`);
+        console.log(`📍 Estado: ${loja.loja.state}`);
+        console.log(`📦 CEP: ${loja.loja.postalCode}`);
+        console.log(`📏 Distância: ${loja.distancia}`);
+        console.log('🚚 Fretes disponíveis:');
+
+        if (loja.frete.length === 0) {
+          console.log('   ❌ Nenhum frete disponível.');
+        } else {
+          loja.frete.forEach((f: any) => {
+            console.log(`   📦 ${f.description} - ${f.price} (${f.prazo})`);
+          });
+        }
+
+        console.log('\n──────────────────────────────\n');
+      });
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Erro ao processar o CEP:', error.message);
+    } else {
+      console.error('Erro ao processar o CEP:', error);
+    }
+  } finally {
+    rl.close();
   }
-
-  await app.close();
-}
-bootstrap();
+});
