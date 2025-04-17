@@ -63,4 +63,4 @@ Contribuições são bem-vindas! Abra uma issue ou envie um PR.
 
 ## 📄 Licença
 
-MIT © [Seu Nome]
+MIT © Julio Cesar Ramos de Oliveira
